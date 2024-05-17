@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LogoImg from "../../assets/logo.svg";
 import { Container } from "../../components/Container";
 import { Input } from "../../components/Input";
@@ -6,6 +6,9 @@ import { Input } from "../../components/Input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../services/firebaseConnection";
 
 const schema = z.object({
     email: z.string().email("Por favor, digite um e-mail válido.").min(1, "Campo e-mail não pode estar vazio."),
@@ -15,13 +18,24 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function Login() {
+    const navigate = useNavigate();
+
     const { formState: { errors }, handleSubmit, register } = useForm<FormData>({
         resolver: zodResolver(schema),
         mode: "onChange"
     })
 
-    const handleLogin = (data: FormData) => {
-        console.log(data)
+    const handleLogin = async (data: FormData) => {
+        signInWithEmailAndPassword(auth, data.email, data.password)
+            .then(async (user) => {
+                console.log("USUÁRIO LOGGADO COM SUCESSO.");
+                console.log(user)
+                navigate("/dashboard", { replace: true })
+            })
+            .catch(err => {
+                console.log("ERRO AO FAZER LOGIN.")
+                console.log(err)
+            })
     }
 
     return <Container>
@@ -30,7 +44,7 @@ export function Login() {
                 <img src={LogoImg} alt="Logo image" className="w-full" />
             </Link>
 
-            <form className="bg-white w-full max-w-xl" onSubmit={handleSubmit(handleLogin)}>
+            <form className="bg-white w-full max-w-xl p-4" onSubmit={handleSubmit(handleLogin)}>
                 <div className="mb-3">
                     <Input
                         type="text"
@@ -49,9 +63,10 @@ export function Login() {
                         error={errors.password?.message}
                     />
                 </div>
-                <button>Enviar</button>
+                <button type="submit" className="bg-zinc-900 w-full rounded-md h-10 text-white font-medium">Entrar</button>
             </form>
 
+            <Link to="/register"> Desejo me cadastar.</Link>
         </div>
     </Container>
 }
