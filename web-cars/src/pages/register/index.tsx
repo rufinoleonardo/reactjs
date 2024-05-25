@@ -1,3 +1,6 @@
+import { useContext } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
+
 import { Link, useNavigate } from "react-router-dom";
 import { Container } from "../../components/Container";
 import LogoImg from "../../assets/logo.svg";
@@ -21,6 +24,8 @@ type FormData = z.infer<typeof schema>;
 export function Register() {
     const navigate = useNavigate();
 
+    const { handleUserInfo } = useContext(AuthContext);
+
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
         mode: "onChange"
@@ -28,9 +33,19 @@ export function Register() {
 
     const onSubmit = async (data: FormData) => {
         await createUserWithEmailAndPassword(auth, data.email, data.password).then(async (user) => {
-            await updateProfile(user.user, { displayName: data.name })
-            console.log("CADASTRO REALIZADO COM SUCESSO.")
-            navigate("/dashboard", { replace: true })
+
+            await updateProfile(user.user, { displayName: data.name });
+
+            handleUserInfo({
+                name: data.name,
+                email: data.email,
+                uid: user.user.uid
+            });
+
+            console.log("CADASTRO REALIZADO COM SUCESSO.");
+
+            navigate("/dashboard", { replace: true });
+
         }).catch(err => {
             console.log("ERRO AO CADASTRAR O USUÁRIO.")
             console.log(err)

@@ -6,7 +6,9 @@ import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { CarDetail } from "./pages/car";
 import { Home } from "./pages/home";
-import { NewCar } from "./pages/car/new";
+import { NewCar } from "./pages/dashboard/new";
+
+import { Private } from "./routes/Private";
 
 
 const router = createBrowserRouter([
@@ -14,8 +16,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/dashboard", element: <Dashboard /> },
-      { path: "/dashboard/new", element: <NewCar /> },
+      { path: "/dashboard", element: <Private><Dashboard /></Private> },
+      { path: "/dashboard/new", element: <Private><NewCar /></Private> },
       { path: "/car/:id", element: <CarDetail /> }
     ]
   },
