@@ -71,7 +71,7 @@ export function NewCar() {
         const carsCollection = collection(db, "cars");
 
         addDoc(carsCollection, {
-            name: data.name,
+            name: data.name.toUpperCase(),
             model: data.model,
             year: data.year,
             km: data.km,

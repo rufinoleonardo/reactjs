@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Container } from "../../components/Container"
 
 // DATABASE
-import { collection, query, getDocs, orderBy } from "firebase/firestore";
+import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
 import { db } from "../../services/firebaseConnection";
 
 
@@ -17,7 +17,10 @@ export interface CarProps {
     city: string,
     km: string,
     images: CarImageProps[],
-    uid: string
+    uid: string,
+    description: string,
+    model: string,
+    whatsapp: string
 }
 
 interface CarImageProps {
@@ -27,41 +30,81 @@ interface CarImageProps {
 }
 
 export function Home() {
-    const [cars, setCars] = useState<CarProps[]>([])
-    const [loadImages, setLoadImages] = useState<string[]>([])
+    const [cars, setCars] = useState<CarProps[]>([]);
+    const [loadImages, setLoadImages] = useState<string[]>([]);
+    const [input, setInput] = useState<string>("");
 
     useEffect(() => {
-        function loadCars() {
-            const carsRef = collection(db, `cars`);
-            const queryRef = query(carsRef, orderBy("createdAt", "desc"));
-
-            getDocs(queryRef)
-                .then(snapshot => {
-                    let listCars = [] as CarProps[];
-
-                    snapshot.forEach(doc => {
-                        listCars.push({
-                            id: doc.id,
-                            city: doc.data().city,
-                            images: doc.data().images,
-                            name: doc.data().name,
-                            km: doc.data().km,
-                            price: doc.data().price,
-                            year: doc.data().year,
-                            uid: doc.data().uid
-                        })
-                    })
-
-                    setCars(listCars)
-                })
-                .catch(err => console.log(err))
-        }
-
         loadCars();
-    }, [])
+    }, []);
+
+    function loadCars() {
+        const carsRef = collection(db, `cars`);
+        const queryRef = query(carsRef, orderBy("createdAt", "desc"));
+
+        getDocs(queryRef)
+            .then(snapshot => {
+                let listCars = [] as CarProps[];
+
+                snapshot.forEach(doc => {
+                    listCars.push({
+                        id: doc.id,
+                        name: doc.data().name,
+                        model: doc.data().model,
+                        city: doc.data().city,
+                        images: doc.data().images,
+                        km: doc.data().km,
+                        price: doc.data().price,
+                        year: doc.data().year,
+                        whatsapp: doc.data().whatsapp,
+                        description: doc.data().description,
+                        uid: doc.data().uid
+                    })
+                })
+
+                setCars(listCars)
+            })
+            .catch(err => console.log(err))
+    }
 
     function handleImgLoad(id: string) {
         setLoadImages((prevImgLoaded) => [...prevImgLoaded, id])
+    }
+
+    async function handleSearchCar() {
+        if (input === "") {
+            loadCars();
+            return
+        }
+
+        setCars([]);
+        setLoadImages([]);
+
+        const q = query(collection(db, "cars"),
+            where("name", ">=", input.toUpperCase()),
+            where("name", "<=", input.toUpperCase() + "\uf8ff")
+        )
+
+        const querySnapshot = await getDocs(q);
+        let listCars = [] as CarProps[];
+
+        querySnapshot.forEach((doc) => {
+            listCars.push({
+                id: doc.id,
+                name: doc.data().name,
+                year: doc.data().year,
+                city: doc.data().city,
+                description: doc.data().description,
+                km: doc.data().km,
+                model: doc.data().model,
+                price: doc.data().price,
+                images: doc.data().images,
+                uid: doc.data().uid,
+                whatsapp: doc.data().whatsapp
+            })
+        })
+
+        setCars(listCars)
     }
 
     return <Container>
@@ -69,8 +112,12 @@ export function Home() {
             <input className="w-full rounded-lg border-2 h-9 px-3 outline-none"
                 type="text"
                 placeholder="Search here"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
             />
-            <button className="bg-red-500 h-9 px-8 text-white font-medium rounded-lg">Buscar</button>
+            <button className="bg-red-500 h-9 px-8 text-white font-medium rounded-lg"
+                onClick={handleSearchCar}
+            >Buscar</button>
         </section>
 
         <h1 className="font-bold text-center mt-6 text-2xl mb-4">

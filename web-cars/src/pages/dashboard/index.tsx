@@ -13,10 +13,13 @@ import { db, storage } from "../../services/firebaseConnection";
 // TYPES AND INTERFACES
 import { CarProps } from "../home";
 import { deleteObject, ref } from "firebase/storage";
+import { Link, useNavigate } from "react-router-dom";
 
 export function Dashboard() {
     const { user } = useContext(AuthContext);
     const [cars, setCars] = useState<CarProps[]>([]);
+    const navigate = useNavigate();
+    // const [imgLoaded, setImgLoaded] = useState(false);
 
     useEffect(() => {
         function loadCars() {
@@ -42,7 +45,10 @@ export function Dashboard() {
                             city: doc.data().city,
                             price: doc.data().price,
                             images: doc.data().images,
-                            uid: doc.data().uid
+                            uid: doc.data().uid,
+                            description: doc.data().description,
+                            model: doc.data().model,
+                            whatsapp: doc.data().whatsapp
                         })
                     })
 
@@ -73,7 +79,10 @@ export function Dashboard() {
         })
 
         setCars(cars.filter(car => car.id != car0.id))
+
+        console.log(cars)
         console.log('CARRO DELETADO.')
+        navigate("/dashboard", { replace: true })
     }
 
     return (
@@ -81,31 +90,32 @@ export function Dashboard() {
             <DashboardHeader />
             <main className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {cars.map(car => (
-                    <section className="w-full bg-white rounded-lg relative" key={car.id}>
-                        <button
-                            className="absolute bg-white w-12 h-12 flex items-center justify-center rounded-full right-2 top-2 drop-shadow"
-                            onClick={() => { handleDeleteCar(car) }}
-                        >
-                            <FiTrash size={26} color="#000" />
-                        </button>
+                    <Link to={`/car/${car.id}`} key={car.id}>
+                        <section className="w-full bg-white rounded-lg relative">
+                            <button
+                                className="absolute bg-white w-12 h-12 flex items-center justify-center rounded-full right-2 top-2 drop-shadow"
+                                onClick={() => { handleDeleteCar(car) }}
+                            >
+                                <FiTrash size={26} color="#000" />
+                            </button>
+                            <img className="w-full rounded-lg mb-2 max-h-70"
+                                src={car.images[0].url}
+                            />
+                            <p className="font-bold mt-1 px-2 mb-2">{car.name}</p>
 
-                        <img className="w-full rounded-lg mb-2 max-h-70"
-                            src={car.images[0].url}
-                        />
-                        <p className="font-bold mt-1 px-2 mb-2">{car.name}</p>
+                            <div className="flex flex-col px-2">
+                                <span>Ano {car.year} | {car.km} km</span>
+                                <strong className="text-black font-bold mt-4">R$ {car.price}</strong>
+                            </div>
 
-                        <div className="flex flex-col px-2">
-                            <span>Ano {car.year} | {car.km} km</span>
-                            <strong className="text-black font-bold mt-4">R$ {car.price}</strong>
-                        </div>
-
-                        <div className="w-full h-px bg-slate-200 my-2"></div>
-                        <div>
-                            <span className="text-black">
-                                {car.city}
-                            </span>
-                        </div>
-                    </section>
+                            <div className="w-full h-px bg-slate-200 my-2"></div>
+                            <div>
+                                <span className="text-black">
+                                    {car.city}
+                                </span>
+                            </div>
+                        </section>
+                    </Link>
                 ))}
             </main>
         </Container>
