@@ -33,6 +33,7 @@
 
 .loginBtn {
     background: transparent;
+    max-width: 200px;
     padding: 8px 32px;
     border-radius: 24px;
     color: #FFF;
@@ -59,4 +60,21 @@
     padding: 4px 14px;
     border-radius: 4px;
     margin: 0 14px;
+}
+
+@media screen and (max-width: 570px) {
+    .logo {
+        font-size: 24px;
+        text-wrap: nowrap;
+    }
+
+    .loginBtn {
+        padding: 8px 16px;
+    }
+
+    .link {
+        max-width: 100px;
+        text-align: center;
+        padding: 4px 16px;
+    }
 }
